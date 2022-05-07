@@ -10,9 +10,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
-	"github.com/etclabscore/core-pool/rpc"
-	"github.com/etclabscore/core-pool/storage"
-	"github.com/etclabscore/core-pool/util"
+	"github.com/frkhash/core-pool/rpc"
+	"github.com/frkhash/core-pool/storage"
+	"github.com/frkhash/core-pool/util"
 )
 
 const txCheckInterval = 5 * time.Second

@@ -22,12 +22,12 @@ Dependencies:
 
 **I highly recommend to use Ubuntu 20.04 LTS.**
 
-First install  [core-geth](https://github.com/etclabscore/core-geth/releases).
+First install  [core-geth](https://github.com/frkhash/core-geth/releases).
 
 Clone & compile:
 
     git config --global http.https://gopkg.in.followRedirects true
-    git clone https://github.com/etclabscore/core-pool.git
+    git clone https://github.com/frkhash/core-pool.git
     cd core-pool
     make
 
@@ -310,4 +310,4 @@ I recommend this deployment strategy:
 
 ### frontend
 
-See https://github.com/etclabscore/core-pool-interface
+See https://github.com/frkhash/core-pool-interface

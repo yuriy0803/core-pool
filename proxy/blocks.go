@@ -9,8 +9,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/etclabscore/core-pool/rpc"
-	"github.com/etclabscore/core-pool/util"
+	"github.com/frkhash/core-pool/rpc"
+	"github.com/frkhash/core-pool/util"
 )
 
 const maxBacklog = 3

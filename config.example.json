@@ -1,8 +1,8 @@
 {
 	"threads": 2,
-	"coin": "etc",
+	"coin": "exp",
 	"name": "main",
-	"network": "classic",
+	"network": "expanse",
 
 	"proxy": {
 		"enabled": true,
