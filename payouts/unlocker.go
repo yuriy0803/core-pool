@@ -44,6 +44,10 @@ var frontierBlockReward = big.NewInt(5e+18)
 var byzantiumBlockReward = big.NewInt(3e+18)
 var constantinopleBlockReward = big.NewInt(2e+18)
 
+var frontierBlockRewardExpanse = big.NewInt(8e+18)
+var byzantiumBlockRewardExpanse = big.NewInt(4e+18)
+var constantinopleBlockRewardExpanse = big.NewInt(4e+18)
+
 // params for ubqhash
 var ubiqStartReward = big.NewInt(8e+18)
 
@@ -260,6 +264,13 @@ func (u *BlockUnlocker) handleBlock(block *rpc.GetBlockReply, candidate *storage
 		reward = getConstReward(era)
 		// Add reward for including uncles
 		uncleReward := getRewardForUncle(reward)
+		rewardForUncles := big.NewInt(0).Mul(uncleReward, big.NewInt(int64(len(block.Uncles))))
+		reward.Add(reward, rewardForUncles)
+
+	} else if u.config.Network == "expanse" {
+		reward = getConstRewardExpanse(candidate.Height)
+		// Add reward for including uncles
+		uncleReward := new(big.Int).Div(reward, big32)
 		rewardForUncles := big.NewInt(0).Mul(uncleReward, big.NewInt(int64(len(block.Uncles))))
 		reward.Add(reward, rewardForUncles)
 
@@ -612,7 +623,7 @@ func getConstReward(era *big.Int) *big.Int {
 	return wr
 }
 
-//frkhash
+// frkhash
 func getRewardForUncle(blockReward *big.Int) *big.Int {
 	return new(big.Int).Div(blockReward, big32) //return new(big.Int).Div(reward, new(big.Int).SetInt64(32))
 }
@@ -706,6 +717,35 @@ func getConstRewardEthereum(height int64, cfg *UnlockerConfig) *big.Int {
 
 // ethash
 func getUncleRewardEthereum(uHeight *big.Int, height *big.Int, reward *big.Int) *big.Int {
+	r := new(big.Int)
+	r.Add(uHeight, big8)
+	r.Sub(r, height)
+	r.Mul(r, reward)
+	r.Div(r, big8)
+	if r.Cmp(big.NewInt(0)) < 0 {
+		r = big.NewInt(0)
+	}
+
+	return r
+}
+
+func getConstRewardExpanse(height int64, cfg *UnlockerConfig) *big.Int {
+	// Select the correct block reward based on chain progression
+	blockReward := frontierBlockRewardExpanse
+	headerNumber := big.NewInt(height)
+	if cfg.ByzantiumFBlock.Cmp(headerNumber) <= 0 {
+		blockReward = byzantiumBlockRewardExpanse
+	}
+	if cfg.ConstantinopleFBlock.Cmp(headerNumber) <= 0 {
+		blockReward = constantinopleBlockRewardExpanse
+	}
+	// Accumulate the rewards for the miner and any included uncles
+	reward := new(big.Int).Set(blockReward)
+	return reward
+}
+
+// ethash
+func getUncleRewardExpanse(uHeight *big.Int, height *big.Int, reward *big.Int) *big.Int {
 	r := new(big.Int)
 	r.Add(uHeight, big8)
 	r.Sub(r, height)
