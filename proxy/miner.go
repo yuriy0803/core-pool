@@ -23,7 +23,7 @@ var (
 
 func (s *ProxyServer) processShare(login, id, ip string, t *BlockTemplate, params []string, stratum bool) (bool, bool) {
 	if hasher == nil {
-		if s.config.Network == "expanse" {
+		if s.config.Network == "expanse" || s.config.Network == "rebirth" {
 			hasher = frkhash.New(nil, nil, &xip5Block)
 		} else if s.config.Network == "classic" {
 			hasher = frkhash.New(&ecip1099FBlockClassic, nil, nil)
