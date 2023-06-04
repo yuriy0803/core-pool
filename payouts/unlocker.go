@@ -33,7 +33,7 @@ type UnlockerConfig struct {
 	Network              string   `json:"network"`
 }
 
-const minDepth = 16
+const minDepth = 61
 
 // params for frkhash
 var homesteadReward = math.MustParseBig256("5000000000000000000")
@@ -79,6 +79,9 @@ func NewBlockUnlocker(cfg *UnlockerConfig, backend *storage.RedisClient, network
 	} else if network == "expanse" {
 		cfg.ByzantiumFBlock = big.NewInt(800000)
 		cfg.ConstantinopleFBlock = big.NewInt(1860000)
+	} else if network == "rebirth" {
+		cfg.ByzantiumFBlock = big.NewInt(0)
+		cfg.ConstantinopleFBlock = big.NewInt(0)
 	} else if network == "ropsten" {
 		cfg.ByzantiumFBlock = big.NewInt(1700000)
 		cfg.ConstantinopleFBlock = big.NewInt(4230000)
@@ -268,7 +271,7 @@ func (u *BlockUnlocker) handleBlock(block *rpc.GetBlockReply, candidate *storage
 		reward.Add(reward, rewardForUncles)
 
 	} else if u.config.Network == "expanse" {
-		reward = getConstRewardExpanse(candidate.Height)
+		reward = getConstRewardExpanse(candidate.Height, u.config)
 		// Add reward for including uncles
 		uncleReward := new(big.Int).Div(reward, big32)
 		rewardForUncles := big.NewInt(0).Mul(uncleReward, big.NewInt(int64(len(block.Uncles))))
@@ -321,7 +324,9 @@ func handleUncle(height int64, uncle *rpc.GetBlockReply, candidate *storage.Bloc
 	} else if cfg.Network == "ubiq" {
 		reward = getUncleRewardUbiq(new(big.Int).SetInt64(uncleHeight), new(big.Int).SetInt64(height), getConstRewardUbiq(height))
 	} else if cfg.Network == "ethereum" || cfg.Network == "ropsten" {
-		reward = getUncleRewardEthereum(new(big.Int).SetInt64(uncleHeight), new(big.Int).SetInt64(height), getConstRewardUbiq(height))
+		reward = getUncleRewardEthereum(new(big.Int).SetInt64(uncleHeight), new(big.Int).SetInt64(height), getConstRewardEthereum(height, cfg))
+	} else if cfg.Network == "Expanse" {
+		reward = getUncleRewardExpanse(new(big.Int).SetInt64(uncleHeight), new(big.Int).SetInt64(height), getConstRewardExpanse(height, cfg))
 	}
 	candidate.Height = height
 	candidate.UncleHeight = uncleHeight
