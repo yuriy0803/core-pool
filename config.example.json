@@ -1,8 +1,8 @@
 {
 	"threads": 2,
-	"coin": "etc",
+	"coin": "exp",
 	"name": "main",
-	"network": "classic",
+	"network": "expanse",
 
 	"proxy": {
 		"enabled": true,
@@ -68,12 +68,12 @@
 	"upstream": [
 		{
 			"name": "main",
-			"url": "http://127.0.0.1:8545",
+			"url": "http://127.0.0.1:9656",
 			"timeout": "10s"
 		},
 		{
 			"name": "backup",
-			"url": "http://127.0.0.2:8545",
+			"url": "http://127.0.0.2:9656",
 			"timeout": "10s"
 		}
 	],
@@ -93,15 +93,19 @@
 		"immatureDepth": 20,
 		"keepTxFees": false,
 		"interval": "10m",
-		"daemon": "http://127.0.0.1:8545",
-		"timeout": "10s"
+		"daemon": "http://127.0.0.1:9656",
+		"timeout": "10s",
+		"byzantiumFBlock" : 0,
+		"constantinopleFBlock" : 0,
+		"network" : "expanse"
+
 	},
 
 	"payouts": {
 		"enabled": false,
 		"requirePeers": 25,
 		"interval": "120m",
-		"daemon": "http://127.0.0.1:8545",
+		"daemon": "http://127.0.0.1:9656",
 		"timeout": "10s",
 		"address": "0x0",
 		"gas": "21000",

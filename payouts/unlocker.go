@@ -10,9 +10,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/math"
 
-	"github.com/etclabscore/core-pool/rpc"
-	"github.com/etclabscore/core-pool/storage"
-	"github.com/etclabscore/core-pool/util"
+	"github.com/frkhash/core-pool/rpc"
+	"github.com/frkhash/core-pool/storage"
+	"github.com/frkhash/core-pool/util"
 )
 
 type UnlockerConfig struct {
@@ -33,9 +33,9 @@ type UnlockerConfig struct {
 	Network              string   `json:"network"`
 }
 
-const minDepth = 16
+const minDepth = 61
 
-// params for etchash
+// params for frkhash
 var homesteadReward = math.MustParseBig256("5000000000000000000")
 var disinflationRateQuotient = big.NewInt(4) // Disinflation rate quotient for ECIP1017
 var disinflationRateDivisor = big.NewInt(5)  // Disinflation rate divisor for ECIP1017
@@ -43,6 +43,10 @@ var disinflationRateDivisor = big.NewInt(5)  // Disinflation rate divisor for EC
 var frontierBlockReward = big.NewInt(5e+18)
 var byzantiumBlockReward = big.NewInt(3e+18)
 var constantinopleBlockReward = big.NewInt(2e+18)
+
+var frontierBlockRewardExpanse = big.NewInt(8e+18)
+var byzantiumBlockRewardExpanse = big.NewInt(4e+18)
+var constantinopleBlockRewardExpanse = big.NewInt(4e+18)
 
 // params for ubqhash
 var ubiqStartReward = big.NewInt(8e+18)
@@ -72,6 +76,12 @@ func NewBlockUnlocker(cfg *UnlockerConfig, backend *storage.RedisClient, network
 	} else if network == "ethereum" {
 		cfg.ByzantiumFBlock = big.NewInt(4370000)
 		cfg.ConstantinopleFBlock = big.NewInt(7280000)
+	} else if network == "expanse" {
+		cfg.ByzantiumFBlock = big.NewInt(800000)
+		cfg.ConstantinopleFBlock = big.NewInt(1860000)
+	} else if network == "rebirth" {
+		cfg.ByzantiumFBlock = big.NewInt(0)
+		cfg.ConstantinopleFBlock = big.NewInt(0)
 	} else if network == "ropsten" {
 		cfg.ByzantiumFBlock = big.NewInt(1700000)
 		cfg.ConstantinopleFBlock = big.NewInt(4230000)
@@ -260,6 +270,19 @@ func (u *BlockUnlocker) handleBlock(block *rpc.GetBlockReply, candidate *storage
 		rewardForUncles := big.NewInt(0).Mul(uncleReward, big.NewInt(int64(len(block.Uncles))))
 		reward.Add(reward, rewardForUncles)
 
+	} else if u.config.Network == "expanse" {
+		reward = getConstRewardExpanse(candidate.Height, u.config)
+		// Add reward for including uncles
+		uncleReward := new(big.Int).Div(reward, big32)
+		rewardForUncles := big.NewInt(0).Mul(uncleReward, big.NewInt(int64(len(block.Uncles))))
+		reward.Add(reward, rewardForUncles)
+	} else if u.config.Network == "rebirth" {
+		reward = getConstRewardExpanse(candidate.Height, u.config)
+		// Add reward for including uncles
+		uncleReward := new(big.Int).Div(reward, big32)
+		rewardForUncles := big.NewInt(0).Mul(uncleReward, big.NewInt(int64(len(block.Uncles))))
+		reward.Add(reward, rewardForUncles)
+
 	} else if u.config.Network == "ubiq" {
 		reward = getConstRewardUbiq(candidate.Height)
 		// Add reward for including uncles
@@ -307,7 +330,9 @@ func handleUncle(height int64, uncle *rpc.GetBlockReply, candidate *storage.Bloc
 	} else if cfg.Network == "ubiq" {
 		reward = getUncleRewardUbiq(new(big.Int).SetInt64(uncleHeight), new(big.Int).SetInt64(height), getConstRewardUbiq(height))
 	} else if cfg.Network == "ethereum" || cfg.Network == "ropsten" {
-		reward = getUncleRewardEthereum(new(big.Int).SetInt64(uncleHeight), new(big.Int).SetInt64(height), getConstRewardUbiq(height))
+		reward = getUncleRewardEthereum(new(big.Int).SetInt64(uncleHeight), new(big.Int).SetInt64(height), getConstRewardEthereum(height, cfg))
+	} else if cfg.Network == "expanse" || cfg.Network == "rebirth" {
+		reward = getUncleRewardExpanse(new(big.Int).SetInt64(uncleHeight), new(big.Int).SetInt64(height), getConstRewardExpanse(height, cfg))
 	}
 	candidate.Height = height
 	candidate.UncleHeight = uncleHeight
@@ -602,19 +627,19 @@ func GetBlockEra(blockNum, eraLength *big.Int) *big.Int {
 	return new(big.Int).Sub(d, dremainder)
 }
 
-// etchash
+// frkhash
 func getConstReward(era *big.Int) *big.Int {
 	var blockReward = homesteadReward
 	wr := GetBlockWinnerRewardByEra(era, blockReward)
 	return wr
 }
 
-//etchash
+// frkhash
 func getRewardForUncle(blockReward *big.Int) *big.Int {
 	return new(big.Int).Div(blockReward, big32) //return new(big.Int).Div(reward, new(big.Int).SetInt64(32))
 }
 
-// etchash
+// frkhash
 func getUncleReward(uHeight *big.Int, height *big.Int, era *big.Int, reward *big.Int) *big.Int {
 	// Era 1 (index 0):
 	//   An extra reward to the winning miner for including uncles as part of the block, in the form of an extra 1/32 (0.15625ETC) per uncle included, up to a maximum of two (2) uncles.
@@ -715,7 +740,36 @@ func getUncleRewardEthereum(uHeight *big.Int, height *big.Int, reward *big.Int) 
 	return r
 }
 
-// ethash, etchash, ubqhash
+func getConstRewardExpanse(height int64, cfg *UnlockerConfig) *big.Int {
+	// Select the correct block reward based on chain progression
+	blockReward := frontierBlockRewardExpanse
+	headerNumber := big.NewInt(height)
+	if cfg.ByzantiumFBlock.Cmp(headerNumber) <= 0 {
+		blockReward = byzantiumBlockRewardExpanse
+	}
+	if cfg.ConstantinopleFBlock.Cmp(headerNumber) <= 0 {
+		blockReward = constantinopleBlockRewardExpanse
+	}
+	// Accumulate the rewards for the miner and any included uncles
+	reward := new(big.Int).Set(blockReward)
+	return reward
+}
+
+// ethash
+func getUncleRewardExpanse(uHeight *big.Int, height *big.Int, reward *big.Int) *big.Int {
+	r := new(big.Int)
+	r.Add(uHeight, big8)
+	r.Sub(r, height)
+	r.Mul(r, reward)
+	r.Div(r, big8)
+	if r.Cmp(big.NewInt(0)) < 0 {
+		r = big.NewInt(0)
+	}
+
+	return r
+}
+
+// ethash, frkhash, ubqhash
 func (u *BlockUnlocker) getExtraRewardForTx(block *rpc.GetBlockReply) (*big.Int, error) {
 	amount := new(big.Int)
 

@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/etclabscore/go-etchash"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/frkhash/go-frkhash"
 
-	"github.com/etclabscore/core-pool/util"
+	"github.com/frkhash/core-pool/util"
 )
 
 var (
@@ -17,19 +17,22 @@ var (
 	ecip1099FBlockClassic uint64           = 11700000 // classic mainnet
 	ecip1099FBlockMordor  uint64           = 2520000  // mordor
 	uip1FEpoch            uint64           = 22       // ubiq mainnet
-	hasher                *etchash.Etchash = nil
+	xip5Block             uint64           = 0        // expanse rebirth network
+	hasher                *frkhash.Frkhash = nil
 )
 
 func (s *ProxyServer) processShare(login, id, ip string, t *BlockTemplate, params []string, stratum bool) (bool, bool) {
 	if hasher == nil {
-		if s.config.Network == "classic" {
-			hasher = etchash.New(&ecip1099FBlockClassic, nil)
+		if s.config.Network == "expanse" || s.config.Network == "rebirth" {
+			hasher = frkhash.New(nil, nil, &xip5Block)
+		} else if s.config.Network == "classic" {
+			hasher = frkhash.New(&ecip1099FBlockClassic, nil, nil)
 		} else if s.config.Network == "mordor" {
-			hasher = etchash.New(&ecip1099FBlockMordor, nil)
+			hasher = frkhash.New(&ecip1099FBlockMordor, nil, nil)
 		} else if s.config.Network == "ubiq" {
-			hasher = etchash.New(nil, &uip1FEpoch)
+			hasher = frkhash.New(nil, &uip1FEpoch, nil)
 		} else if s.config.Network == "ethereum" || s.config.Network == "ropsten" {
-			hasher = etchash.New(nil, nil)
+			hasher = frkhash.New(nil, nil, nil)
 		} else {
 			// unknown network
 			log.Printf("Unknown network configuration %s", s.config.Network)

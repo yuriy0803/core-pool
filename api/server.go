@@ -12,8 +12,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/etclabscore/core-pool/storage"
-	"github.com/etclabscore/core-pool/util"
+	"github.com/frkhash/core-pool/storage"
+	"github.com/frkhash/core-pool/util"
 )
 
 type ApiConfig struct {

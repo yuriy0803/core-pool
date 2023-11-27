@@ -1,11 +1,12 @@
 package payouts
 
 import (
-	"github.com/etclabscore/core-pool/rpc"
-	"github.com/etclabscore/core-pool/storage"
 	"math/big"
 	"os"
 	"testing"
+
+	"github.com/frkhash/core-pool/rpc"
+	"github.com/frkhash/core-pool/storage"
 )
 
 func TestMain(m *testing.M) {

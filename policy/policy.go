@@ -9,8 +9,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/etclabscore/core-pool/storage"
-	"github.com/etclabscore/core-pool/util"
+	"github.com/frkhash/core-pool/storage"
+	"github.com/frkhash/core-pool/util"
 )
 
 type Config struct {

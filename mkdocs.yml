@@ -5,12 +5,12 @@ site_url: https://etclabscore.github.io/core-pool/
 site_author: CorePool Team
 
 # Repository
-repo_name: etclabscore/core-pool
-repo_url: https://github.com/etclabscore/core-pool
+repo_name: frkhash/core-pool
+repo_url: https://github.com/frkhash/core-pool
 edit_uri: edit/master/docs/
 
 # Copyright
-copyright: 'Copyright &copy; 2021 etclabscore/core-pool - All rights reserved'
+copyright: 'Copyright &copy; 2021 frkhash/core-pool - All rights reserved'
 
 # Configuration
 theme:

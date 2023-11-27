@@ -1,3 +1,4 @@
+//go:build go1.9
 // +build go1.9
 
 package main
@@ -13,10 +14,10 @@ import (
 
 	"github.com/yvasiyarov/gorelic"
 
-	"github.com/etclabscore/core-pool/api"
-	"github.com/etclabscore/core-pool/payouts"
-	"github.com/etclabscore/core-pool/proxy"
-	"github.com/etclabscore/core-pool/storage"
+	"github.com/frkhash/core-pool/api"
+	"github.com/frkhash/core-pool/payouts"
+	"github.com/frkhash/core-pool/proxy"
+	"github.com/frkhash/core-pool/storage"
 )
 
 var cfg proxy.Config

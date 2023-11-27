@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/etclabscore/core-pool/util"
+	"github.com/frkhash/core-pool/util"
 )
 
 const (
